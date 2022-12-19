@@ -1,3 +1,5 @@
 /target
 *.swp
 *.log
+/shadow.*.data
+/shadow.data
