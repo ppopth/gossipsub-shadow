@@ -1344,6 +1344,7 @@ dependencies = [
  "async-std",
  "futures",
  "libp2p",
+ "rand 0.8.5",
 ]
 
 [[package]]

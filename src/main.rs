@@ -1,4 +1,4 @@
-use async_std::io;
+use async_std::stream;
 use futures::{prelude::*, select};
 use libp2p::gossipsub::MessageId;
 use libp2p::gossipsub::{
@@ -63,21 +63,20 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Swarm::with_async_std_executor(transport, behaviour, local_peer_id)
     };
 
-    // Read full lines from stdin
-    let mut stdin = io::BufReader::new(io::stdin()).lines().fuse();
-
     // Listen on all interfaces and whatever port the OS assigns
     swarm.listen_on("/ip4/0.0.0.0/tcp/0".parse()?)?;
 
-    println!("Enter messages via STDIN and they will be sent to connected peers using Gossipsub");
+    // Create the random number generator
+    let mut rng = rand::thread_rng();
+    let mut interval = stream::interval(Duration::from_secs(4)).fuse();
 
     // Kick it off
     loop {
         select! {
-            line = stdin.select_next_some() => {
+            () = interval.select_next_some() => {
                 if let Err(e) = swarm
                     .behaviour_mut().gossipsub
-                    .publish(topic.clone(), line.expect("Stdin not to close").as_bytes()) {
+                    .publish(topic.clone(), format!("Hello {} from {}", rng.gen::<u64>(), local_peer_id)) {
                     println!("Publish error: {e:?}");
                 }
             },
